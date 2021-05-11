@@ -47,16 +47,14 @@ month2=time2->tm_mon+1;
 year2=time2->tm_year+1900;
 //comparisn between both file date and time
 if(year1<year2)found=1;
-else if(month1<month2)found=1;
-else if(date1<date2)found=1;
-else if(hour1<hour2)found=1;
-else if(minute1<minute2)found=1;
-else if(second1<second2)found=1;
-
+if((year1==year2)&&(month1<month2))found=1;
+else if((year1==year2)&&(month1==month2)&&(date1<date2))found=1;
+else if((year1==year2)&&(month1==month2)&&(date1==date2)&&(hour1<hour2))found=1;
+else if((year1==year2)&&(month1==month2)&&(date1==date2)&&(hour1==hour2)&&(minute1<minute2))found=1;
+else if((year1==year2)&&(month1==month2)&&(date1==date2)&&(hour1==hour2)&&(minute1==minute2)&&(second1<second2))found=1;
 if(found==0)
 {
-cout<<"*************"<<endl;
-cout<<"file converted successfully"<<endl;
+cout<<"File converted successfully"<<endl;
 return 0;
 }
 FILE *f1,*f2,*f3;
@@ -377,6 +375,6 @@ f1=fopen("tmp.tmp","wb");
 fclose(f1);
 }
 }
-cout<<"file converted successfully"<<endl;
+cout<<"File converted successfully"<<endl;
 return 0;
 }
