@@ -1,20 +1,84 @@
-#include<stdio.h>
 #include<iostream>
+#include<stdio.h>
+#include<time.h>
+#include<sys/stat.h>
 #include<string.h>
 using namespace std;
 int main(int dataCount,char *data[])
 {
+if(dataCount==1)
+{
+cout<<"Input file name as command line argument"<<endl;
+return 0;
+}
 string fileName(data[1]);
 string newFileName;
-FILE *f1;
+newFileName=fileName+".cpp";
+cout<<newFileName<<endl;
+
+//date and time comparisn
+int found=0;
+
+struct stat st1;
+char *mt1;
+struct tm *time1;
+stat(newFileName.c_str(),&st1);    //file_Name.tpl.cpp
+mt1=ctime(&(st1.st_mtime));
+time1=localtime(&(st1.st_mtime));
+int hour1,minute1,second1,date1,month1,year1;
+hour1=time1->tm_hour;
+minute1=time1->tm_min;
+second1=time1->tm_sec;
+date1=time1->tm_mday;
+month1=time1->tm_mon+1;
+year1=time1->tm_year+1900;
+struct stat st2;
+char *mt2;
+struct tm *time2;
+int hour2,minute2,second2,date2,month2,year2;
+stat(fileName.c_str(),&st2);      //file_Name.tpl
+mt2=ctime(&(st2.st_mtime));
+time2=localtime(&(st2.st_mtime));
+hour2=time2->tm_hour;
+minute2=time2->tm_min;
+second2=time2->tm_sec;
+date2=time2->tm_mday;
+month2=time2->tm_mon+1;
+year2=time2->tm_year+1900;
+//comparisn between both file date and time
+if(year1<year2)found=1;
+else if(month1<month2)found=1;
+else if(date1<date2)found=1;
+else if(hour1<hour2)found=1;
+else if(minute1<minute2)found=1;
+else if(second1<second2)found=1;
+
+if(found==0)
+{
+cout<<"*************"<<endl;
+cout<<"file converted successfully"<<endl;
+return 0;
+}
+FILE *f1,*f2,*f3;
+int i,j,c;
+int count=-1;
+int r,len,k;
+string tmpFile;
 f1=fopen(fileName.c_str(),"rb");
 if(f1==NULL)
 {
+cout<<"Unable to open file"<<endl;
 return 0;
 }
-newFileName=fileName+".cpp";
-string tmpFile=fileName;
-int i,j,c;
+int functionsExists=0;
+f2=fopen(newFileName.c_str(),"rb");
+if(f2!=NULL)
+{
+fclose(f2);
+functionsExists=1;
+}
+f2=fopen(newFileName.c_str(),"wb");
+tmpFile=fileName;
 if(tmpFile[0]>=97&&tmpFile[0]<=122)tmpFile[0]=tmpFile[0]-32;
 for(i=1;tmpFile[i]!='.';i++);
 tmpFile[i]='_';
@@ -25,7 +89,6 @@ if(tmpFile[i]>=97&&tmpFile[i]<=122)tmpFile[i]=tmpFile[i]-32;
 i++;
 }
 tmpFile="get"+tmpFile;
-FILE *f2;
 f2=fopen(newFileName.c_str(),"wb");
 if(f2==NULL)
 {
@@ -41,9 +104,6 @@ fputs("(Request &request,Response &response)",f2);
 fputs("\n",f2);
 fputs("{",f2);
 fputs("\n",f2);
-int count=-1;
-int r,len,k;
-int found=0;
 char str1[52];
 char str2[52];
 char str3[104];//due to overcome from error
@@ -211,7 +271,9 @@ fputs("\n",f2);
 fputs("}",f2);
 fclose(f1);
 fclose(f2);
-FILE *f3;
+
+if(functionsExists==0)
+{
 f3=fopen("tpl.h","ab");
 fseek(f3,0,2);
 len=ftell(f3);
@@ -252,71 +314,69 @@ fclose(f3);
 else
 {
 fclose(f3);
-FILE *f4;
-f4=fopen("tpl.h","rb");
-FILE *f5;
-f5=fopen("tmp.tmp","wb");
-fgets(str1,50,f4);
+f1=fopen("tpl.h","rb");
+f2=fopen("tmp.tmp","wb");
+fgets(str1,50,f1);
 fflush(stdin);
-fputs(str1,f5);
-fgets(str1,50,f4);
+fputs(str1,f2);
+fgets(str1,50,f1);
 fflush(stdin);
-fputs(str1,f5);
-fputs("#include \"",f5);
-fputs(newFileName.c_str(),f5);
-fputs("\"",f5);
-fputs("\n",f5);
-fgets(str1,50,f4);
+fputs(str1,f2);
+fputs("#include \"",f2);
+fputs(newFileName.c_str(),f2);
+fputs("\"",f2);
+fputs("\n",f2);
+fgets(str1,50,f1);
 fflush(stdin);
 while(1)
 {
-if(feof(f4))break;
+if(feof(f1))break;
 if(strcmp(str1,"void registerTPLs(TMWebProjector *server)\n")==0)break;
-fputs(str1,f5);
-fgets(str1,50,f4);
+fputs(str1,f2);
+fgets(str1,50,f1);
 fflush(stdin);
 }
-fputs("void ",f5);
-fputs(tmpFile.c_str(),f5);
-fputs("(Request &request,Response &response);",f5);
-fputs("\n",f5);
-fputs("void registerTPLs(TMWebProjector *server)",f5);
-fputs("\n",f5);
-fputs("{",f5);
-fputs("\n",f5);
-fputs("server->onRequest(\"/",f5);
-fputs(fileName.c_str(),f5);
-fputs("\",",f5);
-fputs(tmpFile.c_str(),f5);
-fputs(");",f5);
-fputs("\n",f5);
-fgets(str1,50,f4);
+fputs("void ",f2);
+fputs(tmpFile.c_str(),f2);
+fputs("(Request &request,Response &response);",f2);
+fputs("\n",f2);
+fputs("void registerTPLs(TMWebProjector *server)",f2);
+fputs("\n",f2);
+fputs("{",f2);
+fputs("\n",f2);
+fputs("server->onRequest(\"/",f2);
+fputs(fileName.c_str(),f2);
+fputs("\",",f2);
+fputs(tmpFile.c_str(),f2);
+fputs(");",f2);
+fputs("\n",f2);
+fgets(str1,50,f1);
 while(1)
 {
-fgets(str1,50,f4);
-if(feof(f4))break;
+fgets(str1,50,f1);
+if(feof(f1))break;
 fflush(stdin);
-fputs(str1,f5);
+fputs(str1,f2);
 }
-fputs(str1,f5);
-fclose(f4);
-fclose(f5);
-FILE *f6,*f7;
-f6=fopen("tmp.tmp","rb");
-f7=fopen("tpl.h","wb");
+fputs(str1,f2);
+fclose(f1);
+fclose(f2);
+f1=fopen("tmp.tmp","rb");
+f2=fopen("tpl.h","wb");
 while(1)
 {
-fgets(str1,50,f6);
-if(feof(f6))break;
+fgets(str1,50,f1);
+if(feof(f1))break;
 fflush(stdin);
-fputs(str1,f7);
+fputs(str1,f2);
 }
-fputs(str1,f7);
-fclose(f6);
-fclose(f7);
-FILE *f8;
-f8=fopen("tmp.tmp","wb");
-fclose(f8);
+fputs(str1,f2);
+fclose(f1);
+fclose(f2);
+f1=fopen("tmp.tmp","wb");
+fclose(f1);
 }
+}
+cout<<"file converted successfully"<<endl;
 return 0;
 }
